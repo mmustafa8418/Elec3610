@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Unimates - Messages</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Poppins',sans-serif; background:#f5f7fa; color:#333; }
+    header { background:linear-gradient(135deg,#2980b9,#6dd5fa); color:#fff; padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; }
+    nav ul { display:flex; list-style:none; gap:1rem; }
+    nav a { color:#fff; text-decoration:none; }
+    .container { display:flex; height:calc(100vh - 72px); }
+    .sidebar { width:250px; background:#fff; border-right:1px solid #ddd; overflow-y:auto; }
+    .sidebar h3 { padding:1rem; border-bottom:1px solid #eee; }
+    .convo-list { list-style:none; }
+    .convo-list li { padding:1rem; border-bottom:1px solid #eee; cursor:pointer; }
+    .convo-list li:hover { background:#f0f0f0; }
+    .convo-list li.active { background:#ddd; font-weight:600; }
+    .chat { flex:1; display:flex; flex-direction:column; }
+    .messages { flex:1; padding:1rem; overflow-y:auto; }
+    .message-item { margin-bottom:1rem; max-width:60%; padding:0.5rem 1rem; border-radius:8px; }
+    .from-me { background:#2980b9; color:#fff; margin-left:auto; }
+    .from-them { background:#ececec; color:#333; margin-right:auto; }
+    .input-area { display:flex; border-top:1px solid #ddd; background:#fff; padding:0.5rem; }
+    .input-area input { flex:1; padding:0.7rem; border:1px solid #ccc; border-radius:4px; margin-right:0.5rem; }
+    .input-area button { padding:0.7rem 1rem; background:#2980b9; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Unimates</h1>
+    <nav><ul><li><a href="index.html">Home</a></li><li><a href="search.html">Search</a></li><li><a href="list-property.html">List Property</a></li><li><a href="messages.html">Messages</a></li></ul></nav>
+  </header>
+  <div class="container">
+    <aside class="sidebar">
+      <h3>Conversations</h3>
+      <ul class="convo-list" id="convoList"></ul>
+    </aside>
+    <div class="chat">
+      <div class="messages" id="messages"></div>
+      <div class="input-area">
+        <input type="text" id="messageInput" placeholder="Type your message..." />
+        <button id="sendBtn">Send</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Load persisted conversations or default
+const defaultConvos = { '1': [{text:'Hi there!', fromMe:false},{text:'Hello!', fromMe:true}], '2': [{text:'Is the room still available?',fromMe:false}], '3': [{text:'Thanks for your help.',fromMe:true}], '4': [] };
+let convos = {};
+try {
+  const stored = localStorage.getItem('convos');
+  convos = stored ? JSON.parse(stored) : defaultConvos;
+} catch {
+  convos = defaultConvos;
+}
+const convoNames = { '1':'Alice','2':'Bob','3':'Charlie','4':'Dana' };
+
+    // Populate sidebar list
+    const convoListElem = document.getElementById('convoList');
+    Object.entries(convoNames).forEach(([id, name]) => {
+      const li = document.createElement('li');
+      li.dataset.id = id;
+      li.textContent = name;
+      convoListElem.appendChild(li);
+    });
+
+    // Parse convId from URL
+    const params = new URLSearchParams(window.location.search);
+    let currentId = params.get('convId') || Object.keys(convos)[0];
+
+    function renderConvos() {
+      document.querySelectorAll('.convo-list li').forEach(li => {
+        li.classList.toggle('active', li.dataset.id === currentId);
+      });
+    }
+
+    function renderMessages(id) {
+      const messagesDiv = document.getElementById('messages');
+      messagesDiv.innerHTML = '';
+      convos[id].forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'message-item ' + (m.fromMe ? 'from-me' : 'from-them');
+        div.textContent = m.text;
+        messagesDiv.appendChild(div);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Handle clicking on a conversation
+    convoListElem.addEventListener('click', e => {
+      if (e.target.dataset.id) {
+        currentId = e.target.dataset.id;
+        renderConvos();
+        renderMessages(currentId);
+      }
+    });
+
+    // Sending a message
+    document.getElementById('sendBtn').onclick = () => {
+      const input = document.getElementById('messageInput');
+      if (!input.value) return;
+      convos[currentId].push({text: input.value, fromMe: true});
+      // Persist updated conversations
+      localStorage.setItem('convos', JSON.stringify(convos));
+      renderMessages(currentId);
+      input.value = '';
+    };
+
+    // Initial render
+    renderConvos();
+    renderMessages(currentId);
+  </script>
+</body>
+</html>
