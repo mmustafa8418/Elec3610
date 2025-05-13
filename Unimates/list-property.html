@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Unimates - List Property</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Poppins',sans-serif;background:#f5f7fa;color:#333;padding:2rem;}
+    .denied{color:#e74c3c;text-align:center;margin-top:2rem;font-size:1.2rem;}
+    header{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#2980b9,#6dd5fa);color:#fff;padding:1rem 2rem;}
+    nav ul{list-style:none;display:flex;gap:1rem;}
+    nav a{color:#fff;text-decoration:none;}
+    form{background:#fff;padding:2rem;border-radius:8px;max-width:600px;margin:2rem auto;box-shadow:0 4px 8px rgba(0,0,0,0.1);}
+    label{display:block;margin-bottom:0.5rem;font-weight:500;}
+    input,select,textarea{width:100%;padding:0.7rem;margin-bottom:0.5rem;border:1px solid #ccc;border-radius:4px;}
+    .tooltip{font-size:0.8rem;color:#666;margin-bottom:1rem;}
+    .error{color:#e74c3c;font-size:0.8rem;margin-bottom:1rem;display:none;}
+    button{background:#2980b9;color:#fff;border:none;padding:0.7rem 1.2rem;border-radius:4px;cursor:pointer;margin-right:0.5rem;}
+    button:disabled{background:#aaa;cursor:default;}
+    .toast{position:fixed;bottom:1rem;right:1rem;background:#2ecc71;color:#fff;padding:1rem;border-radius:4px;display:none;}
+    .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;}
+    .modal-content{background:#fff;padding:2rem;border-radius:8px;max-width:500px;width:90%;}
+    .amenities {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .amenities label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      flex: 1 1 calc(33% - 1rem);
+      min-width: 120px;
+    }
+    .amenities label{display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Unimates</h1>
+    <nav><ul><li><a href="index.html">Home</a></li><li><a href="search.html">Search</a></li><li><a href="list-property.html">List Property</a></li></ul></nav>
+  </header>
+  <div id="accessDenied" class="denied">Access Denied. Please <a href="login.html">login</a> with a verified student account.</div>
+  <form id="listForm" novalidate>
+    <h2>List a New Property</h2>
+    <label>Title <span class="tooltip">e.g., “Cozy Studio Near USYD”</span></label>
+    <input type="text" id="title" required />
+    <div id="error-title" class="error">Title is required.</div>
+
+    <label>Rent ($/week)</label>
+    <input type="number" id="rent" required />
+    <div id="error-rent" class="error">Please enter a valid rent.</div>
+
+    <label>Location <span class="tooltip">Enter address or select from map</span></label>
+    <input type="text" id="locationField" required />
+    <div id="error-location" class="error">Location is required.</div>
+
+    <label>Room Type</label>
+    <select id="roomType" required>
+      <option value="">Select type</option>
+      <option>Studio</option>
+      <option>Shared Room</option>
+      <option>Apartment</option>
+    </select>
+    <div id="error-roomType" class="error">Room type is required.</div>
+
+    <label>Amenities <span class="tooltip"> - Select all that apply</span></label>
+    <div class="amenities">
+      <div class="amenity-item">
+        <input type="checkbox" id="amenity-wifi" />
+        <label for="amenity-wifi">Wifi</label>
+      </div>
+      <div class="amenity-item">
+        <input type="checkbox" id="amenity-laundry" />
+        <label for="amenity-laundry">Laundry</label>
+      </div>
+      <div class="amenity-item">
+        <input type="checkbox" id="amenity-parking" />
+        <label for="amenity-parking">Parking</label>
+      </div>
+      <div class="amenity-item">
+        <input type="checkbox" id="amenity-ac" />
+        <label for="amenity-ac">Air Conditioning</label>
+      </div>
+      <div class="amenity-item">
+        <input type="checkbox" id="amenity-furnished" />
+        <label for="amenity-furnished">Furnished</label>
+      </div>
+      <div class="amenity-item">
+        <input type="checkbox" id="amenity-desk" />
+        <label for="amenity-desk">Study Desk</label>
+      </div>
+    </div>
+
+    <label>Description</label>
+    <textarea id="description" rows="4" required></textarea>
+    <div id="error-description" class="error">Description is required.</div>
+
+    <label>Upload Images</label>
+    <input type="file" id="images" accept="image/png, image/jpeg" multiple />
+    <div id="error-images" class="error">Image upload failed. You can retry or submit without images.</div>
+
+    <button type="button" id="previewBtn">Preview</button>
+    <button type="submit">Submit</button>
+  </form>
+
+  <div class="modal" id="previewModal">
+    <div class="modal-content">
+      <h3>Preview Listing</h3>
+      <div id="previewContent"></div>
+      <button onclick="closeModal()">Close</button>
+    </div>
+  </div>
+  <div class="toast" id="toast">Listing submitted successfully!</div>
+
+  <script>
+    // Mock auth
+    const isLoggedIn = true;
+    const isVerified = true;
+    const accessDeniedDiv = document.getElementById('accessDenied');
+    const form = document.getElementById('listForm');
+    if (!isLoggedIn || !isVerified) {
+      form.style.display = 'none';
+    } else {
+      accessDeniedDiv.style.display = 'none';
+    }
+
+    // Preview modal
+    const modal = document.getElementById('previewModal');
+    function closeModal(){ modal.style.display='none'; }
+    document.getElementById('previewBtn').onclick = () => {
+      const title = document.getElementById('title').value;
+      document.getElementById('previewContent').innerHTML = `<p><strong>Title:</strong> ${title}</p>`;
+      modal.style.display = 'flex';
+    };
+
+    // Validation & submission
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      let valid = true;
+      ['title','rent','locationField','roomType','description'].forEach(id => {
+        const field = document.getElementById(id);
+        const err = document.getElementById('error-'+id);
+        if (!field.value) { field.style.borderColor='#e74c3c'; err.style.display='block'; valid=false; }
+        else { field.style.borderColor='#ccc'; err.style.display='none'; }
+      });
+      if (!valid) return;
+      document.getElementById('toast').style.display='block';
+      setTimeout(()=>{ document.getElementById('toast').style.display='none'; window.location='my-listings.html'; }, 2000);
+    };
+  </script>

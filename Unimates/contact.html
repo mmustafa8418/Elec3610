@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Unimates - Contact</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Poppins',sans-serif; background:#f5f7fa; color:#333; padding:2rem; }
+    header { background:linear-gradient(135deg,#2980b9,#6dd5fa); color:#fff; padding:1rem 2rem; display:flex; justify-content:space-between; }
+    nav ul { list-style:none; display:flex; gap:1.5rem; }
+    nav a { color:#fff; text-decoration:none; }
+    form {
+      background:#fff; padding:2rem; border-radius:8px;
+      max-width:600px; margin:2rem auto;
+      box-shadow:0 4px 8px rgba(0,0,0,0.1);
+    }
+    label { display:block; margin-bottom:0.5rem; }
+    input, textarea { width:100%; padding:0.7rem; margin-bottom:1rem; border:1px solid #ccc; border-radius:4px; }
+    button { background:#2980b9; color:#fff; border:none; padding:0.7rem 1.2rem; border-radius:4px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Unimates</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="search.html">Search</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Contact Us</h2>
+    <form onsubmit="alert('Message sent!'); return false;">
+      <label>Name</label>
+      <input type="text" required>
+      <label>Email</label>
+      <input type="email" required>
+      <label>Message</label>
+      <textarea rows="5" required></textarea>
+      <button type="submit">Send Message</button>
+    </form>
+  </main>
+</body>
+</html>
