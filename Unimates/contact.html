@@ -1,49 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Unimates - Contact</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Contact Us – Unimates</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Poppins',sans-serif; background:#f5f7fa; color:#333; padding:2rem; }
-    header { background:linear-gradient(135deg,#2980b9,#6dd5fa); color:#fff; padding:1rem 2rem; display:flex; justify-content:space-between; }
-    nav ul { list-style:none; display:flex; gap:1.5rem; }
-    nav a { color:#fff; text-decoration:none; }
-    form {
-      background:#fff; padding:2rem; border-radius:8px;
-      max-width:600px; margin:2rem auto;
-      box-shadow:0 4px 8px rgba(0,0,0,0.1);
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background-color: #f8f9fa;
+      color: #333;
     }
-    label { display:block; margin-bottom:0.5rem; }
-    input, textarea { width:100%; padding:0.7rem; margin-bottom:1rem; border:1px solid #ccc; border-radius:4px; }
-    button { background:#2980b9; color:#fff; border:none; padding:0.7rem 1.2rem; border-radius:4px; cursor:pointer; }
+
+    nav {
+      background: linear-gradient(to right, #007bff, #00c6ff);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    nav h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: white;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .nav-links a {
+      margin-left: 20px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .nav-links a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 50px auto;
+      padding: 0 20px;
+    }
+
+    h2 {
+      color: #007bff;
+      margin-bottom: 20px;
+    }
+
+    form {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .success-message {
+      margin-top: 20px;
+      background-color: #e9f7ef;
+      padding: 15px;
+      border-left: 5px solid #28a745;
+      border-radius: 6px;
+      font-size: 1rem;
+      color: #155724;
+      display: none;
+    }
+
+    .faq {
+      margin-top: 50px;
+    }
+
+    details {
+      margin-bottom: 15px;
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      cursor: pointer;
+    }
+
+    summary {
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    summary::marker {
+      color: #007bff;
+    }
+
+    footer {
+      font-size: 0.9rem;
+      color: #888;
+      text-align: center;
+      margin: 50px auto 20px;
+    }
+
+    @media (max-width: 600px) {
+      nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .nav-links {
+        margin-top: 10px;
+        flex-direction: column;
+      }
+      .nav-links a {
+        margin: 5px 0;
+      }
+    }
   </style>
 </head>
 <body>
-  <header>
+
+  <nav>
     <h1>Unimates</h1>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="search.html">Search</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </nav>
-  </header>
-  <main>
-    <h2>Contact Us</h2>
-    <form onsubmit="alert('Message sent!'); return false;">
-      <label>Name</label>
-      <input type="text" required>
-      <label>Email</label>
-      <input type="email" required>
-      <label>Message</label>
-      <textarea rows="5" required></textarea>
-      <button type="submit">Send Message</button>
-    </form>
-  </main>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="search.html">Search</a>
+      <a href="list.html">List a Room</a>
+      <a href="help.html">Help</a>
+      <a href="messages.html">Messages</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <section class="contact-form">
+      <h2>Contact Us</h2>
+      <form id="contactForm">
+        <input type="text" id="name" placeholder="Your Name" required>
+        <input type="email" id="email" placeholder="Your Email" required>
+        <input type="text" id="subject" placeholder="Subject" required>
+        <textarea rows="5" id="message" placeholder="Your Message" required></textarea>
+        <button type="submit">Send Message</button>
+      </form>
+      <div class="success-message" id="successMessage">
+        ✅ Thank you! Your message has been submitted. We'll get back to you via email within 2–3 working days.
+      </div>
+    </section>
+
+    <section class="faq">
+      <h2>Frequently Asked Questions</h2>
+      <details>
+        <summary>How do I list a room on Unimates?</summary>
+        <p>You can list a room by clicking “List a Room” in the navigation bar and filling out the form. You must be a verified student.</p>
+      </details>
+      <details>
+        <summary>How do I know if a listing is safe?</summary>
+        <p>All users are required to verify their university credentials. We also monitor reports and apply filters for scams.</p>
+      </details>
+      <details>
+        <summary>Can I contact a property owner before booking?</summary>
+        <p>Yes, use our secure in-platform messaging system to chat before finalizing any arrangements.</p>
+      </details>
+      <details>
+        <summary>Is there a cost to use Unimates?</summary>
+        <p>Creating an account and browsing is free. Listing properties and premium features may include small service fees.</p>
+      </details>
+    </section>
+  </div>
+
+  <footer>
+    © 2025 Unimates — Student Housing Made Easy
+  </footer>
+
+  <script>
+    document.getElementById("contactForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const subject = document.getElementById("subject").value.trim();
+      const message = document.getElementById("message").value.trim();
+
+      if (name && email && subject && message) {
+        document.getElementById("successMessage").style.display = "block";
+        document.getElementById("contactForm").reset();
+      }
+    });
+  </script>
+
 </body>
 </html>
