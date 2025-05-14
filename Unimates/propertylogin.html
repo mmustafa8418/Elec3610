@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="loginstyle.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="wrapper">
+        <form id="loginForm" action="">
+            <h1>Property User Login</h1> 
+            <div class="input_box">
+                <input type="text" id= "email" placeholder="Email" autocomplete="off" required>
+                <i class="bx bxs-envelope"></i> 
+            </div>
+            <div class="input_box">
+                <input type="password" id ="password" placeholder="Password" autocomplete="off" required>
+                <i class="bx bxs-lock"></i>
+            </div>
+            <div class="remember_me">
+                <label><input type="checkbox"> Remember me</label>
+                <a href="#">Forgot password?</a>
+            </div>
+            <div class="input_submit"> 
+                <button class="btn" type="submit"> Login </button>
+            </div>
+            <div class="register_link">
+                <p>Don't have an account? <a href="#">Register</a></p>
+            </div>
+            <p id="message"></p>
+        </form>
+    </div>
+
+    <script>
+        //Demo credentials
+        const validEmail = "lister@email.com";
+        const validPassword = "1234";
+
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent page reload
+
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            const messageEl = document.getElementById("message");
+
+            if (email === validEmail && password === validPassword) {
+                setTimeout(() => {
+                    window.location.href = "Test.html";   ///HTML navigation
+                }, 1000); //Delay to simulate real website
+
+            } else {
+                messageEl.style.color = "crimson";
+                messageEl.textContent = "Invalid email or password";
+            }
+        });
+    </script>
+</body>
+</html>
