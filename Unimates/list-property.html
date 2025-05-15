@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Unimates - List Property</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Poppins',sans-serif;background:#f5f7fa;color:#333;color:#333; padding:2rem; }
+    .denied{color:#e74c3c;text-align:center;margin-top:2rem;font-size:1.2rem;}
+    header{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#2980b9,#6dd5fa);color:#fff;padding:1rem 2rem;}
+    nav ul{list-style:none;display:flex;gap:1rem;}
+    nav a{color:#fff;text-decoration:none;}
+
+    
+    form{background:#fff;padding:2rem;border-radius:8px;max-width:600px;margin:2rem auto;box-shadow:0 4px 8px rgba(0,0,0,0.1);}
+    label{font-weight:500;margin-bottom:0.5rem;display:block;}
+    input,select,textarea{width:100%;padding:0.7rem;margin-bottom:1rem;border:1px solid #ccc;border-radius:4px;}
+    .tooltip{font-size:0.8rem;color:#666;}
+    .error{color:#e74c3c;font-size:0.8rem;margin-bottom:1rem;display:none;}
+    .map-preview{width:100%;height:200px;background:#e0e0e0;display:flex;align-items:center;justify-content:center;color:#777;margin-bottom:1rem;border-radius:4px;}
+    .distance-group{margin-bottom:1rem;}
+    button{background:#2980b9;color:#fff;border:none;padding:0.7rem 1.2rem;border-radius:4px;cursor:pointer;margin-right:0.5rem;}
+    button:disabled{background:#aaa;cursor:default;}
+    .amenities{display:block;margin-bottom:1rem;}
+    .amenities label{display:flex;align-items:baseline;gap:0.5rem;font-weight:400;}
+    input[type="checkbox"]{width:auto;}
+    /* Preview Modal */
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1000;}
+    .modal-content{background:#fff;padding:1.5rem;border-radius:8px;max-width:500px;width:90%;position:relative;}
+    /* Carousel inside modal */
+    .modal .carousel{position:relative;margin:1rem 0;}
+    .modal .carousel img{width:100%;height:auto;border-radius:4px;}
+    .modal .carousel .arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;padding:0.5rem;cursor:pointer;font-size:1.2rem;}
+    .modal .carousel .prev{left:0.5rem;}
+    .modal .carousel .next{right:0.5rem;}
+    /* Toast */
+    .toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#2ecc71;color:#fff;padding:1rem 1.5rem;border-radius:4px;display:none;z-index:1001;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Unimates</h1>
+    <nav>
+      <ul>
+        <li><a href="loginhomepage.html">Home</a></li>
+        <li><a href="search.html">Search</a></li>
+        <li><a href="list-property.html">List Property</a></li>
+        <li><a href="messages.html">Messages</a></li>
+        <li id="logoutLink" style="display:none;"><a href="#" onclick="logout()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div id="accessDenied" class="denied">
+    Access Denied. Please <a href="login.html">login</a> with a verified student account.
+  </div>
+
+  <form id="listForm" novalidate>
+    <h2>List a New Property</h2>
+
+    <label>Title <span class="tooltip">e.g. “Cozy Studio Near USYD”</span></label>
+    <input type="text" id="title" required />
+    <div id="error-title" class="error">Title is required.</div>
+
+    <label>University / Campus <span class="tooltip">Choose nearest campus</span></label>
+    <select id="campus" required>
+      <option value="">Select your campus</option>
+      <option>University of Sydney</option>
+      <option>UNSW</option>
+      <option>UTS</option>
+      <option>Macquarie University</option>
+    </select>
+    <div id="error-campus" class="error">Campus selection is required.</div>
+
+    <label>Address <span class="tooltip">Start typing to search</span></label>
+    <input type="text" id="address" placeholder="e.g. 123 Broadway, Ultimo" required />
+    <div id="error-address" class="error">Address is required.</div>
+    <div class="map-preview" id="mapPreview">Map preview here</div>
+
+    <div class="distance-group">
+      <label>Distance from campus (km) <span class="tooltip">Select maximum distance</span></label>
+      <input type="range" id="distance" min="0" max="20" step="1" value="5"/>
+      <span id="distanceValue">5 km</span>
+    </div>
+
+    <label>Rent ($/week) <span class="tooltip">e.g. 250</span></label>
+    <input type="number" id="rent" required />
+    <div id="error-rent" class="error">Please enter a valid rent.</div>
+
+    <label>Room Type</label>
+    <select id="roomType" required>
+      <option value="">Select type</option>
+      <option>Studio</option>
+      <option>Sharehouse</option>
+      <option>Apartment</option>
+    </select>
+    <div id="error-roomType" class="error">Room type is required.</div>
+
+    <label>Amenities <span class="tooltip">Select all that apply</span></label>
+    <div class="amenities">
+      <label><input type="checkbox" id="amenity-wifi"/> Wifi</label>
+      <label><input type="checkbox" id="amenity-laundry"/> Laundry</label>
+      <label><input type="checkbox" id="amenity-parking"/> Parking</label>
+      <label><input type="checkbox" id="amenity-ac"/> Air Conditioning</label>
+      <label><input type="checkbox" id="amenity-furnished"/> Furnished</label>
+      <label><input type="checkbox" id="amenity-heating"/> Heating</label>
+      <label><input type="checkbox" id="amenity-desk"/> Study Desk</label>
+    </div>
+
+    <!-- Roommate fields -->
+    <label>Roommates Existing?</label>
+    <select id="roommates">
+      <option value="">Select…</option>
+      <option>Yes</option>
+      <option>No</option>
+    </select>
+
+    <div id="roommateDegreeContainer" style="display:none; margin-bottom:1rem;">
+      <label>Roommate’s Degree:</label>
+      <select id="roommateDegree">
+        <option value="">Any</option>
+        <option>Commerce</option>
+        <option>Engineering</option>
+        <option>Law</option>
+        <option>Science</option>
+        <option>Arts</option>
+      </select>
+    </div>
+
+    <label>Description</label>
+    <textarea id="description" rows="4" required></textarea>
+    <div id="error-description" class="error">Description is required.</div>
+
+    <label>Upload 5 Photos <span class="tooltip">First = cover, next 4 = detail</span></label>
+    <input type="file" id="images" accept="image/png, image/jpeg" multiple />
+    <div id="error-images" class="error">Please upload exactly 5 images (JPEG/PNG).</div>
+
+    <button type="button" id="previewBtn">Preview</button>
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- Preview Modal with 5-image carousel -->
+  <div class="modal" id="previewModal">
+    <div class="modal-content">
+      <h3>Preview Listing</h3>
+      <div class="carousel">
+        <button class="arrow prev" id="previewPrev">‹</button>
+        <img id="previewImg" src="" alt="Preview image"/>
+        <button class="arrow next" id="previewNext">›</button>
+      </div>
+      <div id="previewDetails"></div>
+      <button onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- Success Toast -->
+  <div class="toast" id="toast">
+    Listing submitted successfully!
+  </div>
+
+  <script>
+    // -------- SETUP & AUTH --------
+    const isLoggedIn      = true,
+          isVerified      = true,
+          form            = document.getElementById('listForm'),
+          accessDenied    = document.getElementById('accessDenied'),
+          modal           = document.getElementById('previewModal'),
+          toast           = document.getElementById('toast'),
+          roommatesEl     = document.getElementById('roommates'),
+          degreeContainer = document.getElementById('roommateDegreeContainer');
+
+    window.addEventListener('pageshow', ()=>{
+      modal.style.display = 'none';
+      toast.style.display = 'none';
+    });
+
+    if (!isLoggedIn || !isVerified) {
+      form.style.display = 'none';
+    } else {
+      accessDenied.style.display = 'none';
+    }
+
+    // -------- UI HELPERS --------
+    document.getElementById('distance').addEventListener('input', e => {
+      document.getElementById('distanceValue').textContent = e.target.value + ' km';
+    });
+    document.getElementById('address').addEventListener('blur', () => {
+      const a = document.getElementById('address').value;
+      document.getElementById('mapPreview').textContent =
+        a ? 'Preview: ' + a : 'Map preview here';
+    });
+    roommatesEl.addEventListener('change', () => {
+      if (roommatesEl.value === 'Yes') {
+        degreeContainer.style.display = 'block';
+      } else {
+        degreeContainer.style.display = 'none';
+        document.getElementById('roommateDegree').value = '';
+      }
+    });
+    function closeModal(){ modal.style.display = 'none'; }
+
+    // -------- CAROUSEL STATE --------
+    let previewImgs = [], previewIdx = 0;
+    const imgEl       = document.getElementById('previewImg'),
+          prevBtn     = document.getElementById('previewPrev'),
+          nextBtn     = document.getElementById('previewNext'),
+          detailsEl   = document.getElementById('previewDetails');
+
+    prevBtn.onclick = () => {
+      previewIdx = (previewIdx + previewImgs.length - 1) % previewImgs.length;
+      imgEl.src = previewImgs[previewIdx];
+    };
+    nextBtn.onclick = () => {
+      previewIdx = (previewIdx + 1) % previewImgs.length;
+      imgEl.src = previewImgs[previewIdx];
+    };
+
+    // -------- PREVIEW BUTTON --------
+    document.getElementById('previewBtn').onclick = () => {
+      const files = document.getElementById('images').files;
+      if (files.length !== 5) {
+        document.getElementById('error-images').style.display = 'block';
+        return;
+      }
+      document.getElementById('error-images').style.display = 'none';
+
+      Promise.all(Array.from(files).map(f => new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload  = () => res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(f);
+      }))).then(images => {
+        // set up carousel images
+        previewImgs = images;
+        previewIdx  = 0;
+        imgEl.src   = previewImgs[0];
+
+        // gather details
+        const campus        = document.getElementById('campus').value,
+              address       = document.getElementById('address').value,
+              distance      = document.getElementById('distance').value + ' km',
+              rent          = document.getElementById('rent').value,
+              roomType      = document.getElementById('roomType').value,
+              desc          = document.getElementById('description').value.trim(),
+              amenities     = Array.from(document.querySelectorAll('.amenities input:checked'))
+                                   .map(cb => cb.nextSibling.textContent.trim()),
+              roommates     = roommatesEl.value,
+              roommateDegree= document.getElementById('roommateDegree').value;
+
+        // build detail HTML
+        let html = `
+          <p><strong>Campus:</strong> ${campus}</p>
+          <p><strong>Address:</strong> ${address}</p>
+          <p><strong>Distance:</strong> ${distance}</p>
+          <p><strong>Rent:</strong> $${rent}/wk</p>
+          <p><strong>Room Type:</strong> ${roomType}</p>
+          <p><strong>Amenities:</strong> ${amenities.join(', ')}</p>
+          <p><strong>Description:</strong> ${desc}</p>
+          <p><strong>Roommates Existing:</strong> ${roommates}</p>`;
+        if (roommates === 'Yes') {
+          html += `<p><strong>Roommate’s Degree:</strong> ${roommateDegree || 'Any'}</p>`;
+        }
+        detailsEl.innerHTML = html;
+
+        modal.style.display = 'flex';
+      });
+    };
+
+    // -------- FINAL SUBMISSION --------
+    form.onsubmit = async e => {
+      e.preventDefault();
+      let valid = true;
+      ['title','campus','address','rent','roomType','description'].forEach(id => {
+        const f   = document.getElementById(id),
+              err = document.getElementById('error-'+id);
+        if (!f.value) {
+          f.style.borderColor = '#e74c3c';
+          err.style.display   = 'block';
+          valid = false;
+        } else {
+          f.style.borderColor = '#ccc';
+          err.style.display   = 'none';
+        }
+      });
+      const files = document.getElementById('images').files;
+      if (files.length !== 5) {
+        document.getElementById('error-images').textContent = 'Please upload exactly 5 images.';
+        document.getElementById('error-images').style.display = 'block';
+        valid = false;
+      }
+      if (!valid) return;
+
+      // read images
+      const images = await Promise.all(Array.from(files).map(f => new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload  = () => res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(f);
+      })));
+
+      // build new property
+      const username = localStorage.getItem('userName')
+      const newProp = {
+        title:          document.getElementById('title').value,
+        owner:          username,
+        convId:         'c' + Date.now(),
+        price:          +document.getElementById('rent').value,
+        university:     document.getElementById('campus').value,
+        distance:       +document.getElementById('distance').value,
+        rating:         'No rating yet',
+        features:       Array.from(document.querySelectorAll('.amenities input:checked'))
+                              .map(cb => cb.nextSibling.textContent.trim()),
+        roommates:      roommatesEl.value === 'Yes',
+        roommateDegree: document.getElementById('roommateDegree').value,
+        houseType:      document.getElementById('roomType').value,
+        description:    document.getElementById('description').value.trim(),
+        images:         images  // [cover, detail1, detail2, detail3, detail4]
+      };
+
+      const stored = JSON.parse(localStorage.getItem('properties') || '[]');
+      stored.push(newProp);
+      localStorage.setItem('properties', JSON.stringify(stored));
+
+      toast.style.display = 'block';
+      setTimeout(()=>{
+        toast.style.display = 'none';
+        window.location = 'search.html';
+      }, 1200);
+    };
+  </script>
+  
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+        alert("You must be logged in to view this page.");
+        window.location.href = "userlogin.html";
+    } else {
+      document.getElementById("logoutLink").style.display = "inline";
+    }
+
+    const userRole = localStorage.getItem("userRole");
+    if (userRole === "student"){
+      const listProperty = document.getElementById("listProperty");
+      listProperty.remove();
+      document.getElementById("listPropertyButton").style.display ="none";
+    }
+    function logout(){
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userRole");
+      window.location.href = "homepage.html"
+    }
+  </script>  
+</body>
+</html>

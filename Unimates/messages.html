@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Unimates - Messages</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Poppins',sans-serif; background:#f5f7fa; color:#333; color:#333; padding:2rem; }
+    header { background:linear-gradient(135deg,#2980b9,#6dd5fa); color:#fff; padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; }
+    nav ul { display:flex; list-style:none; gap:1rem; }
+    nav a { color:#fff; text-decoration:none; }
+    .container { display:flex; height:calc(100vh - 72px); }
+    .sidebar { width:250px; background:#fff; border-right:1px solid #ddd; overflow-y:auto; }
+    .sidebar h3 { padding:1rem; border-bottom:1px solid #eee; }
+    /* clear button styling */
+    #clearMsgsBtn { 
+      display:block;
+      width:90%; 
+      margin:0.5rem auto; 
+      padding:0.5rem; 
+      background:#e74c3c; 
+      color:#fff; 
+      border:none; 
+      border-radius:4px; 
+      cursor:pointer;
+      font-weight:600;
+    }
+    .convo-list { list-style:none; margin:0; padding:0; }
+    .convo-list li { padding:1rem; border-bottom:1px solid #eee; cursor:pointer; }
+    .convo-list li:hover { background:#f0f0f0; }
+    .convo-list li.active { background:#ddd; font-weight:600; }
+    .chat { flex:1; display:flex; flex-direction:column; }
+    .messages { flex:1; padding:1rem; overflow-y:auto; }
+    .message-item { margin-bottom:1rem; max-width:60%; padding:0.5rem 1rem; border-radius:8px; }
+    .message-item img { max-width:200px; border-radius:4px; display:block; }
+    .from-me { background:#2980b9; color:#fff; margin-left:auto; }
+    .from-them { background:#ececec; color:#333; margin-right:auto; }
+    .input-area { display:flex; border-top:1px solid #ddd; background:#fff; padding:0.5rem; }
+    .input-area input[type="text"] { flex:1; padding:0.7rem; border:1px solid #ccc; border-radius:4px; margin-right:0.5rem; }
+    .input-area input[type="file"] { margin-right:0.5rem; }
+    .input-area button { padding:0.7rem 1rem; background:#2980b9; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+    .chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-area {
+      /* push itself to the bottom of .chat, and then stick there on scroll */
+      margin-top: auto;
+      position: sticky;
+      bottom: 0;
+      background: #fff; /* you’ll probably want a bg to cover what's behind */
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Unimates</h1>
+    <nav>
+      <ul>
+        <li><a href="loginhomepage.html">Home</a></li>
+        <li><a href="search.html">Search</a></li>
+        <li id="listProperty"><a href="list-property.html">List Property</a></li>
+        <li><a href="messages.html">Messages</a></li>
+        <li id="logoutLink" style="display:none;">
+          <a href="#" onclick="logout()">Logout</a>
+        </li>
+      </ul>
+    </nav>
+  </header>
+  <div class="container">
+    <aside class="sidebar">
+      <h3>Conversations</h3>
+      <!-- Clear Messages Button -->
+      <button id="clearMsgsBtn">🗑️ Clear My Messages</button>
+      <ul class="convo-list" id="convoList"></ul>
+    </aside>
+    <div class="chat">
+      <div class="messages" id="messages"></div>
+      <div class="input-area">
+        <input type="text" id="messageInput" placeholder="Type your message..." />
+        <input type="file" id="fileInput" accept="image/*,application/pdf" />
+        <button id="sendBtn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 1) Gather all listings' convIds → owners
+    const DEFAULT_PROPERTIES = [
+      {title:'Cozy Sydney Room', owner:'Alice',   convId:'1'},
+      {title:'Modern UNSW Apt',  owner:'Bob',     convId:'2'},
+      {title:'UTS Shared House', owner:'Charlie', convId:'3'},
+      {title:'Macquarie Studio', owner:'Dana',    convId:'4'}
+    ];
+    const storedProps   = JSON.parse(localStorage.getItem('properties') || '[]');
+    const allProperties = DEFAULT_PROPERTIES.concat(storedProps);
+    const convoNames = {};
+    allProperties.forEach(p => convoNames[p.convId] = p.owner);
+
+
+    // 2) Default conversation histories
+    const DEFAULT_CONVOS = {
+      '1': [{text:'Hi, please send me the payment deposit link', fromMe:false, type:'text'}],
+      '2': [{text:'Is the room still available?',fromMe:true, type:'text'}],
+      '3': [{text:'I like your listing',fromMe:true, type:'text'},{text:'Thank you, did you want to come for an inspection?', fromMe:false, type:'text'} ],
+      '4': [{text:'Lol, too expensive!',fromMe:true, type:'text'}]
+    };
+
+    // 3) Load saved convos, merging with defaults
+    let convos = {};
+    try {
+      const stored = JSON.parse(localStorage.getItem('convos') || '{}');
+      convos = Object.assign({}, DEFAULT_CONVOS, stored);
+    } catch {
+      convos = Object.assign({}, DEFAULT_CONVOS);
+    }
+    // ensure every convId (including new listings) has an array
+    Object.keys(convoNames).forEach(id => {
+      if (!convos[id]) convos[id] = [];
+    });
+
+    // 4) Element refs
+    const convoListElem  = document.getElementById('convoList');
+    const messagesDiv    = document.getElementById('messages');
+    const clearMsgsBtn   = document.getElementById('clearMsgsBtn');
+    const sendBtn        = document.getElementById('sendBtn');
+    const txtInput       = document.getElementById('messageInput');
+    const fileInput      = document.getElementById('fileInput');
+    const urlRegex = /^(https?:\/\/[^\s]+|[^\s]+\.html?)(\?.*)?$/i; 
+    // 5) Determine current convo from URL or first one
+    const params    = new URLSearchParams(window.location.search);
+    let currentId   = params.get('convId') || Object.keys(convoNames)[0];
+
+    // 6) Render the sidebar list
+    function renderConvos() {
+      convoListElem.innerHTML = '';
+      Object.entries(convoNames).forEach(([id,name]) => {
+        const li = document.createElement('li');
+        li.textContent    = name;
+        li.dataset.id     = id;
+        if (id === currentId) li.classList.add('active');
+        convoListElem.appendChild(li);
+      });
+    }
+
+    // 7) Render messages for current convo
+    function renderMessages(id) {
+      messagesDiv.innerHTML = '';
+      (convos[id] || []).forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'message-item ' + (m.fromMe ? 'from-me' : 'from-them');
+        switch (m.type) {
+          case 'image': {
+            const img = document.createElement('img');
+            img.src = m.data;
+            div.appendChild(img);
+            break;
+          }
+          case 'pdf': {
+            const a = document.createElement('a');
+            a.href = m.data;
+            a.textContent = m.name;
+            a.target = '_blank';
+            div.appendChild(a);
+            break;
+          }
+          case 'link': {
+            const a = document.createElement('a');
+            a.href = m.url;
+            a.textContent = m.url;
+            a.target = '_blank';
+            div.appendChild(a);
+            break;
+          }
+          default: {
+            // plain text with optional auto‑link if it contains a url
+            const words = m.text.split(/(\s+)/g);
+            words.forEach(w => {
+              if (urlRegex.test(w)) {
+                const a = document.createElement('a');
+                a.href = w;
+                a.textContent = w;
+                a.target = '_blank';
+                div.appendChild(a);
+              } else {
+                div.appendChild(document.createTextNode(w));
+              }
+            });
+          }
+        }
+        messagesDiv.appendChild(div);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // 8) Sidebar click → switch convo
+    convoListElem.addEventListener('click', e => {
+      if (!e.target.dataset.id) return;
+      currentId = e.target.dataset.id;
+      renderConvos();
+      renderMessages(currentId);
+      history.replaceState(null,'','messages.html?convId='+currentId);
+    });
+
+    // 9) Send message handler
+    sendBtn.onclick = () => {
+      if (!convos[currentId]) convos[currentId] = [];
+      if (fileInput.files.length) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+          convos[currentId].push({
+            type: file.type==='application/pdf'?'pdf':'image',
+            data: reader.result,
+            name: file.name,
+            fromMe: true
+          });
+          persistAndRender();
+        };
+        reader.readAsDataURL(file);
+        fileInput.value = '';
+      } else if (txtInput.value.trim()) {
+        convos[currentId].push({
+          type: 'text',
+          text: txtInput.value.trim(),
+          fromMe: true
+        });
+        txtInput.value = '';
+        persistAndRender();
+      }
+    };
+
+    function persistAndRender() {
+      // 1) persist
+      localStorage.setItem('convos', JSON.stringify(convos));
+
+      // 2) figure out who’s looking
+      const role = localStorage.getItem('userRole');
+
+      if (role === 'lister') {
+        // force convo → Alex (convId = '1')
+        currentId = '1';
+
+        // clear out sidebar & messages
+        convoListElem.innerHTML = '';
+        messagesDiv.innerHTML  = '';
+
+        // render just Alex
+        const li = document.createElement('li');
+        li.textContent    = 'Alex';
+        li.classList.add('active');
+        convoListElem.appendChild(li);
+
+        // **use your existing renderer** (it handles hyperlinks correctly)
+        renderMessages('1');
+
+        // scroll it down
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+      } else {
+        // students get the full list as before
+        renderConvos();
+        renderMessages(currentId);
+      }
+    }
+
+
+
+    // 10) Clear My Messages handler
+    clearMsgsBtn.onclick = () => {
+      localStorage.removeItem('convos');
+      alert('All your messages have been cleared.');
+      // reset in-memory
+      convos = Object.assign({}, DEFAULT_CONVOS);
+      Object.keys(convoNames).forEach(id => {
+        if (!convos[id]) convos[id] = [];
+      });
+      renderConvos();
+      renderMessages(currentId);
+    };
+
+    // 11) Initial render
+    const userRole = localStorage.getItem("userRole");
+    if (userRole === "lister") {
+      // show only the student “Alex” and their convo
+      convoListElem.innerHTML = '';
+      messagesDiv.innerHTML = '';
+
+      const studentItem = document.createElement('li');
+      studentItem.textContent = 'Alex';
+      studentItem.classList.add('active');
+      convoListElem.appendChild(studentItem);
+
+      // use the default convo if you haven't stored anything yet
+      const convoWithAlex = convos['1'] || [
+        { text: 'Hi, please send me the payment deposit link', fromMe: false, type: 'text' }
+      ];
+
+      convoWithAlex.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'message-item ' + (m.fromMe ? 'from-me' : 'from-them');
+        // for simplicity I'm assuming text-only—if you need images/pdf/link,
+        // just re-use your renderMessages switch logic here
+        div.textContent = m.text;
+        messagesDiv.appendChild(div);
+      });
+
+    } else {
+      // students see them all
+      renderConvos();
+      renderMessages(currentId);
+    }
+
+    // hide logout link for students
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+      alert("You must be logged in to view this page.");
+      window.location.href = "studentlogin.html";
+    } else {
+      // show logout for everyone who’s logged in
+      document.getElementById("logoutLink").style.display = "inline";
+    }
+
+    // hide "List Property" for students
+    if (localStorage.getItem("userRole") === "student") {
+      const listProperty = document.getElementById("listProperty");
+      listProperty && listProperty.remove();
+    }
+
+    // **hide Clear Messages for listers**
+    if (userRole === "lister") {
+      const clearBtn = document.getElementById("clearMsgsBtn");
+      clearBtn && (clearBtn.style.display = "none");
+    }
+
+    function logout() {
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userRole");
+      window.location.href = "homepage.html";
+    }
+  </script>
+
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+        alert("You must be logged in to view this page.");
+        window.location.href = "studentlogin.html";
+    } else {
+      document.getElementById("logoutLink").style.display = "inline";
+    }
+
+    const userRole = localStorage.getItem("userRole");
+    if (userRole === "student"){
+      const listProperty = document.getElementById("listProperty");
+      listProperty.remove();
+    }
+    if (userRole === "lister") {
+      const messageLink = document.querySelector('nav a[href="message.html"]')
+      if (messageLink && messageLink.parentElement) {
+        messageLink.parentElement.remove();
+      }
+    }
+    function logout(){
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userRole");
+      window.location.href = "homepage.html"
+    }
+  </script>  
+    
+</body>
+</html>
