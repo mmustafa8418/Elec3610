@@ -50,8 +50,9 @@
       <ul>
         <li><a href="loginhomepage.html">Home</a></li>
         <li><a href="search.html">Search</a></li>
-        <li><a href="list-property.html">List Property</a></li>
+        <li id="listProperty"><a href="list-property.html">List Property</a></li>
         <li><a href="messages.html">Messages</a></li>
+        <li id="logoutLink" style="display:none;"><a href="#" onclick="logout()">Logout</a></li>
       </ul>
     </nav>
   </header>
@@ -85,9 +86,10 @@
     const convoNames = {};
     allProperties.forEach(p => convoNames[p.convId] = p.owner);
 
+
     // 2) Default conversation histories
     const DEFAULT_CONVOS = {
-      '1': [{text:'Hi there!', fromMe:true, type:'text'},{text:'Hello!', fromMe:false, type:'text'}],
+      '1': [{text:'Hi, I am interested in your listing!', fromMe:false, type:'text'}],
       '2': [{text:'Is the room still available?',fromMe:true, type:'text'}],
       '3': [{text:'I like your listing',fromMe:true, type:'text'},{text:'Thank you, did you want to come for an inspection?', fromMe:false, type:'text'} ],
       '4': []
@@ -113,7 +115,7 @@
     const sendBtn        = document.getElementById('sendBtn');
     const txtInput       = document.getElementById('messageInput');
     const fileInput      = document.getElementById('fileInput');
-
+    const urlRegex = /^(https?:\/\/[^\s]+|[^\s]+\.html?)(\?.*)?$/i; 
     // 5) Determine current convo from URL or first one
     const params    = new URLSearchParams(window.location.search);
     let currentId   = params.get('convId') || Object.keys(convoNames)[0];
@@ -136,19 +138,44 @@
       (convos[id] || []).forEach(m => {
         const div = document.createElement('div');
         div.className = 'message-item ' + (m.fromMe ? 'from-me' : 'from-them');
-        if (m.type === 'image') {
-          const img = document.createElement('img');
-          img.src = m.data;
-          div.appendChild(img);
-        } else if (m.type === 'pdf') {
-          const a = document.createElement('a');
-          a.href = m.data;
-          a.textContent = m.name;
-          a.target = '_blank';
-          a.style.color = m.fromMe ? '#fff':'#333';
-          div.appendChild(a);
-        } else {
-          div.textContent = m.text;
+        switch (m.type) {
+          case 'image': {
+            const img = document.createElement('img');
+            img.src = m.data;
+            div.appendChild(img);
+            break;
+          }
+          case 'pdf': {
+            const a = document.createElement('a');
+            a.href = m.data;
+            a.textContent = m.name;
+            a.target = '_blank';
+            div.appendChild(a);
+            break;
+          }
+          case 'link': {
+            const a = document.createElement('a');
+            a.href = m.url;
+            a.textContent = m.url;
+            a.target = '_blank';
+            div.appendChild(a);
+            break;
+          }
+          default: {
+            // plain text with optional auto‑link if it contains a url
+            const words = m.text.split(/(\s+)/g);
+            words.forEach(w => {
+              if (urlRegex.test(w)) {
+                const a = document.createElement('a');
+                a.href = w;
+                a.textContent = w;
+                a.target = '_blank';
+                div.appendChild(a);
+              } else {
+                div.appendChild(document.createTextNode(w));
+              }
+            });
+          }
         }
         messagesDiv.appendChild(div);
       });
@@ -212,8 +239,63 @@
     };
 
     // 11) Initial render
-    renderConvos();
-    renderMessages(currentId);
+
+    const userRole = localStorage.getItem("userRole");
+    if (userRole === "lister"){
+      const convoListElem = document.getElementById('convoList');
+      const messagesDiv = document.getElementById('messages');
+
+      convoListElem.innerHTML = '';
+      messagesDiv.innerHTML = '';
+
+      const alexListItem = document.createElement('li');
+      alexListItem.textContent = "Alice";
+      alexListItem.classList.add('active');
+      convoListElem.appendChild(alexListItem);
+
+      const convo = [
+        {text: "Hi, I'm interested in your listing!", fromMe: false},
+      ];
+
+      convo.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'message-item ' + (m.fromMe ? 'from-me' : 'from-them');
+        div.textContent = m.text;
+        messagesDiv.appendChild(div);
+      });
+      
+
+    } else {
+      renderConvos();
+      renderMessages(currentId);
+    }
   </script>
+
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+        alert("You must be logged in to view this page.");
+        window.location.href = "studentlogin.html";
+    } else {
+      document.getElementById("logoutLink").style.display = "inline";
+    }
+
+    const userRole = localStorage.getItem("userRole");
+    if (userRole === "student"){
+      const listProperty = document.getElementById("listProperty");
+      listProperty.remove();
+    }
+    if (userRole === "lister") {
+      const messageLink = document.querySelector('nav a[href="message.html"]')
+      if (messageLink && messageLink.parentElement) {
+        messageLink.parentElement.remove();
+      }
+    }
+    function logout(){
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userRole");
+      window.location.href = "userlogin.html"
+    }
+  </script>  
+    
 </body>
 </html>

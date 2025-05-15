@@ -45,16 +45,20 @@
       color:#555;
     }
   </style>
+
+
 </head>
 <body>
   <header>
     <h1>Unimates</h1>
+    <h2 style="font-size: 10px;">Not a real website</h2>
     <nav>
       <ul>
         <li><a href="loginhomepage.html">Home</a></li>
         <li><a href="search.html">Search</a></li>
-        <li><a href="list-property.html">List Property</a></li>
+        <li id="listProperty"><a href="list-property.html">List Property</a></li>
         <li><a href="messages.html">Messages</a></li>
+        <li id="logoutLink" style="display:none;"><a href="#" onclick="logout()">Logout</a></li>
       </ul>
     </nav>
   </header>
@@ -68,9 +72,33 @@
         <h2>Find or List Your Perfect<br>Student Accommodation with Unimates</h2>
         <p>Discover the ideal living space for your university experience.</p>
         <a href="search.html" style="display:inline-block; margin-top:1rem; padding:0.7rem 1.2rem; background:#2980b9; color:#fff; text-decoration:none; border-radius:4px; font-weight:600;">Search A Property</a>
-        <a href="list-property.html" style="display:inline-block; margin-top:1rem; padding:0.7rem 1.2rem; background:#2980b9; color:#fff; text-decoration:none; border-radius:4px; font-weight:600;">List Your Property</a>
+        <a href="list-property.html" id="listPropertyButton" style="display:inline-block; margin-top:1rem; padding:0.7rem 1.2rem; background:#2980b9; color:#fff; text-decoration:none; border-radius:4px; font-weight:600;">List Your Property</a>
       </div>
     </div>
     </div>
   </section>
-$1
+
+  
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+        alert("You must be logged in to view this page.");
+        window.location.href = "studentlogin.html";
+    } else {
+      document.getElementById("logoutLink").style.display = "inline";
+    }
+
+    const userRole = localStorage.getItem("userRole");
+    if (userRole === "student") {
+      const listProperty = document.getElementById("listProperty");
+      listProperty.remove();
+      document.getElementById("listPropertyButton").style.display ="none";
+    }
+    function logout(){
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userRole");
+      window.location.href = "userlogin.html"
+    }
+  </script>
+</body>
+</html>
+  

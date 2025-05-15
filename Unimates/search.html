@@ -54,8 +54,9 @@
       <ul>
         <li><a href="loginhomepage.html">Home</a></li>
         <li><a href="search.html">Search</a></li>
-        <li><a href="list-property.html">List Property</a></li>
+        <li id="listProperty"><a href="list-property.html">List Property</a></li>
         <li><a href="messages.html">Messages</a></li>
+        <li id="logoutLink" style="display:none;"><a href="#" onclick="logout()">Logout</a></li>
       </ul>
     </nav>
   </header>
@@ -187,7 +188,7 @@
         price:700, university:'University of Sydney',
         distance:2, rating:4,
         features:['Air Conditioning','Wifi'],
-        roommates:true,   roommateDegree:'Science',
+        roommates:true,   roommateDegree:'Engineering',
         houseType:'Sharehouse',
         description:'Bright room with air-con & high-speed wifi near USYD.',
         img:'coverimages/usyd.avif'
@@ -207,7 +208,7 @@
         price:800, university:'UTS',
         distance:1, rating:3,
         features:['Wifi'],
-        roommates:true,   roommateDegree:'Engineering',
+        roommates:true,   roommateDegree:'Science',
         houseType:'Sharehouse',
         description:'Friendly shared house steps from UTS, wifi included.',
         img:'coverimages/uts.jpg'
@@ -265,11 +266,17 @@
         out.innerHTML = '<p>No properties found.</p>';
         return;
       }
+
+      const userRole = localStorage.getItem('userRole');
+      const userName = localStorage.getItem('userName');
+
       list.forEach((p,i)=>{
         // pick the correct preview image:
         const previewSrc = p.img 
           || (Array.isArray(p.images) ? p.images[0] : '')
           || 'placeholder.jpg';  // fallback if you want
+
+        const displayOwner = (userRole === 'lister' && userName && p.owner === userName) ? 'You' : p.owner;
 
         const card = document.createElement('div');
         card.className = 'card';
@@ -277,7 +284,7 @@
           <img src="${previewSrc}" alt="${p.title}">
           <div class="card-content">
             <h3>${p.title}</h3>
-            <p><strong>Owner:</strong> ${p.owner}</p>
+            <p><strong>Owner:</strong> ${displayOwner}</p>
             <p>Price: $${p.price}</p>
             <p>University: ${p.university}</p>
             <p>Distance: ${p.distance} km</p>
@@ -285,7 +292,7 @@
             <p>Type: ${p.houseType}</p>
           </div>
           <button onclick="showDetails(${i})">View Details</button>
-          <button onclick="location.href='messages.html?convId=${p.convId}'">
+          <button class="message-btn" onclick="location.href='messages.html?convId=${p.convId}'">
             Message ${p.owner}
           </button>
         `;
@@ -379,7 +386,55 @@
     };
 
     // initial
-    window.onload = ()=>render(properties);
+
+    //Messages are hidden from listers
+    function toggleMessageButtons() {
+      const userRole = localStorage.getItem("userRole");
+      if(userRole === "lister"){
+        document.querySelectorAll('.message-btn').forEach(btn => btn.style.display='none');
+      }
+    }
+    //Clear my listings button is hidden from students
+    function toggleClearButtons() {
+      const userRole = localStorage.getItem("userRole");
+      if(userRole === "student"){
+        const clearBtn = document.getElementById("clearStorageBtn");
+        if(clearBtn) clearBtn.style.display = "none";
+
+      }
+    }
+    window.onload = ()=>{
+      render(properties);
+      toggleMessageButtons();
+      toggleClearButtons();
+    }
+
+  </script>
+
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+        alert("You must be logged in to view this page.");
+        window.location.href = "studentlogin.html";
+    } else {
+      document.getElementById("logoutLink").style.display = "inline";
+    }
+
+    const userRole = localStorage.getItem("userRole");
+    if (userRole === "student"){
+      const listProperty = document.getElementById("listProperty");
+      listProperty.remove();
+    }
+    if (userRole === "lister") {
+      const messageLink = document.querySelector('nav a[href="message.html"]')
+      if (messageLink && messageLink.parentElement) {
+        messageLink.parentElement.remove();
+      }
+    }
+    function logout(){
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userRole");
+      window.location.href = "userlogin.html"
+    }
   </script>
 </body>
 </html>

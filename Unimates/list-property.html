@@ -46,6 +46,7 @@
         <li><a href="search.html">Search</a></li>
         <li><a href="list-property.html">List Property</a></li>
         <li><a href="messages.html">Messages</a></li>
+        <li id="logoutLink" style="display:none;"><a href="#" onclick="logout()">Logout</a></li>
       </ul>
     </nav>
   </header>
@@ -298,9 +299,10 @@
       })));
 
       // build new property
+      const username = localStorage.getItem('userName')
       const newProp = {
         title:          document.getElementById('title').value,
-        owner:          'You',
+        owner:          username,
         convId:         'c' + Date.now(),
         price:          +document.getElementById('rent').value,
         university:     document.getElementById('campus').value,
@@ -326,5 +328,26 @@
       }, 1200);
     };
   </script>
+  
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+        alert("You must be logged in to view this page.");
+        window.location.href = "userlogin.html";
+    } else {
+      document.getElementById("logoutLink").style.display = "inline";
+    }
+
+    const userRole = localStorage.getItem("userRole");
+    if (userRole === "student"){
+      const listProperty = document.getElementById("listProperty");
+      listProperty.remove();
+      document.getElementById("listPropertyButton").style.display ="none";
+    }
+    function logout(){
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userRole");
+      window.location.href = "userlogin.html"
+    }
+  </script>  
 </body>
 </html>
